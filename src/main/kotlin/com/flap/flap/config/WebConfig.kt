@@ -1,4 +1,4 @@
-package com.flap.flap.common.security
+package com.flap.flap.config
 
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.servlet.config.annotation.CorsRegistry
