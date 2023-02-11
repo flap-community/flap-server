@@ -1,5 +1,6 @@
 package com.flap.flap.controller
 
+import com.flap.flap.common.exception.UnauthenticatedException
 import com.flap.flap.mapper.UserMapper
 import com.flap.flap.model.dto.auth.LoginDto
 import com.flap.flap.model.dto.auth.RegisterDto
@@ -49,15 +50,10 @@ class AuthController(private val userService: UserService, private val userMappe
     @GetMapping("user")
     fun user(@CookieValue("jwt") jwt: String?): ResponseEntity<Any> {
         try {
-            if (jwt == null) {
-                return ResponseEntity.status(401).body(Message("unauthenticated"))
-            }
-
-            val body = Jwts.parser().setSigningKey("secret").parseClaimsJws(jwt).body
-
-            return ResponseEntity.ok(this.userService.getById(body.issuer.toInt()))
+            val user = userService.getValidUser(jwt)
+            return ResponseEntity.ok(user)
         } catch (e: Exception) {
-            return ResponseEntity.status(401).body(Message("unauthenticated"))
+            return ResponseEntity.status(401).body(UnauthenticatedException("unauthenticated"))
         }
     }
 

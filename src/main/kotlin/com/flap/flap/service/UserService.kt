@@ -1,11 +1,11 @@
 package com.flap.flap.service
 
 import com.flap.flap.common.exception.InvalidUserException
+import com.flap.flap.common.exception.UnauthenticatedException
 import com.flap.flap.model.entity.User
 import com.flap.flap.repository.UserRepository
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
-import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import java.util.*
 
@@ -39,5 +39,15 @@ class UserService(private val userRepository: UserRepository) {
             .signWith(SignatureAlgorithm.HS512, "secret").compact()
 
         return jwt
+    }
+
+    fun getValidUser(jwt: String?): User? {
+        if (jwt == null) {
+            throw UnauthenticatedException("unauthenticated")
+        }
+
+        val body = Jwts.parser().setSigningKey("secret").parseClaimsJws(jwt).body
+
+        return getById(body.issuer.toInt())
     }
 }
