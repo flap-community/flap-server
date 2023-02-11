@@ -18,36 +18,32 @@ class AuthController(private val userService: UserService, private val userMappe
     @PostMapping("register")
     fun register(@RequestBody body: RegisterDto): ResponseEntity<User> {
         //mapper를 써서 RegisterDTO를 User로 변환
-        val user:User = userMapper.registerDtoToUser(body)
+        val user: User = userMapper.registerDtoToUser(body)
 
         //Service에서 User 저장 로직 수행
-        val response:User = userService.saveUser(user)
+        val response: User = userService.saveUser(user)
 
         return ResponseEntity.ok(response)
     }
 
     @PostMapping("login")
     fun login(@RequestBody body: LoginDto, response: HttpServletResponse): ResponseEntity<Any> {
-        val user = this.userService.findByEmail(body.email)
-                ?: return ResponseEntity.badRequest().body(Message("user not found!"))
 
-        if (!user.comparePassword(body.password)) {
-            return ResponseEntity.badRequest().body(Message("invalid password!"))
-        }
+        //mapper를 써서 LoginDTO를 User로 변환
+        val user: User = userMapper.LoginDtoToUser(body)
 
-        val issuer = user.id.toString()
+        //유효한 유저인지 검증하는 로직
+        userService.checkValidUser(user)
 
-        val jwt = Jwts.builder()
-                .setIssuer(issuer)
-                .setExpiration(Date(System.currentTimeMillis() + 60 * 24 * 1000)) // 1 day
-                .signWith(SignatureAlgorithm.HS512, "secret").compact()
+        //JWT 생성
+        val jwt = userService.generateJwt(user)
 
+        //JWT를 쿠키에 저장
         val cookie = Cookie("jwt", jwt)
         cookie.isHttpOnly = true
-
         response.addCookie(cookie)
 
-        return ResponseEntity.ok(Message("success"))
+        return ResponseEntity.ok(user)
     }
 
     @GetMapping("user")
@@ -72,6 +68,6 @@ class AuthController(private val userService: UserService, private val userMappe
 
         response.addCookie(cookie)
 
-        return ResponseEntity.ok(Message("success"))
+        return ResponseEntity.ok(cookie)
     }
 }
