@@ -6,16 +6,13 @@ import com.flap.flap.model.dto.auth.LoginDto
 import com.flap.flap.model.dto.auth.RegisterDto
 import com.flap.flap.model.entity.User
 import com.flap.flap.service.UserService
-import io.jsonwebtoken.Jwts
-import io.jsonwebtoken.SignatureAlgorithm
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import java.util.*
 import javax.servlet.http.Cookie
 import javax.servlet.http.HttpServletResponse
 
 @RestController
-class AuthController(private val userService: UserService, private val userMapper: UserMapper) {
+class UserController(private val userService: UserService, private val userMapper: UserMapper) {
     @PostMapping("register")
     fun register(@RequestBody body: RegisterDto): ResponseEntity<User> {
         //mapper를 써서 RegisterDTO를 User로 변환
@@ -49,11 +46,11 @@ class AuthController(private val userService: UserService, private val userMappe
 
     @GetMapping("user")
     fun user(@CookieValue("jwt") jwt: String?): ResponseEntity<Any> {
-        try {
+        return try {
             val user = userService.getValidUser(jwt)
-            return ResponseEntity.ok(user)
+            ResponseEntity.ok(user)
         } catch (e: Exception) {
-            return ResponseEntity.status(401).body(UnauthenticatedException("unauthenticated"))
+            ResponseEntity.status(401).body(UnauthenticatedException("unauthenticated"))
         }
     }
 
