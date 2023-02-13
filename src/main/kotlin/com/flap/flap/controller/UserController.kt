@@ -31,21 +31,18 @@ class UserController(
     @PostMapping("login")
     fun login(@RequestBody body: LoginDto, response: HttpServletResponse): ResponseEntity<Any> {
 
-        //mapper를 써서 LoginDTO를 User로 변환
-        val user: User = userMapper.LoginDtoToUser(body)
-
         //유효한 유저인지 검증하는 로직
-        userService.checkValidUser(user)
+        userService.checkValidUser(body)
 
         //JWT 생성
-        val jwt = userService.generateJwt(user)
+        val jwt = userService.generateJwt(body)
 
         //JWT를 쿠키에 저장
         val cookie = Cookie("jwt", jwt)
         cookie.isHttpOnly = true
         response.addCookie(cookie)
 
-        return ResponseEntity.ok(user)
+        return ResponseEntity.ok("success")
     }
 
 
