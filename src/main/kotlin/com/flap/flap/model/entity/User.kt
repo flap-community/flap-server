@@ -41,6 +41,7 @@ class User {
 
         @PrePersist
         fun onPrePersist() {
+                activateAt = LocalDateTime.now()
                 createdAt = LocalDateTime.now()
                 modifiedAt = LocalDateTime.now()
         }
