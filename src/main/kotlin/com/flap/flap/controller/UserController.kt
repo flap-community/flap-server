@@ -12,12 +12,14 @@ import org.springframework.web.bind.annotation.*
 import javax.servlet.http.Cookie
 import javax.servlet.http.HttpServletResponse
 
+
+//TODO: 컨트롤러에 로직 박아넣은거 없애라... 서비스로 옮겨라
 @RestController
 class UserController(
     private val userService: UserService,
     private val userMapper: UserMapper
     ) {
-    @PostMapping("register")
+    @PostMapping("user/register")
     fun register(@RequestBody body: RegisterDto): ResponseEntity<User> {
         //mapper를 써서 RegisterDTO를 User로 변환
         val user: User = userMapper.registerDtoToUser(body)
@@ -28,7 +30,7 @@ class UserController(
         return ResponseEntity.ok(response)
     }
 
-    @PostMapping("login")
+    @PostMapping("user/login")
     fun login(@RequestBody body: LoginDto, response: HttpServletResponse): ResponseEntity<Any> {
 
         //유효한 유저인지 검증하는 로직
@@ -38,10 +40,7 @@ class UserController(
         val jwt = userService.generateJwt(body)
 
         //JWT를 쿠키에 저장
-        val cookie = Cookie("jwt", jwt)
-        cookie.isHttpOnly = true
-        response.addCookie(cookie)
-
+        response.addHeader("Authorization", "$jwt")
         return ResponseEntity.ok("success")
     }
 
@@ -57,7 +56,7 @@ class UserController(
         }
     }
 
-    @PostMapping("logout")
+    @PostMapping("user/logout")
     fun logout(response: HttpServletResponse): ResponseEntity<Any> {
         val cookie = Cookie("jwt", "")
         cookie.maxAge = 0
